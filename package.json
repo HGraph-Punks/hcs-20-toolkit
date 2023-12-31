@@ -1,0 +1,35 @@
+{
+  "private": true,
+  "name": "HCS-20 Toolkit",
+  "description": "Toolkit for HCS-20 points creation on HCS and Hedera",
+  "version": "1.0.0",
+  "author": "patches",
+  "main": "app/background.js",
+  "scripts": {
+    "dev": "nextron",
+    "build": "nextron build",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.39.0",
+    "axios": "^1.6.3",
+    "electron-serve": "^1.1.0",
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/server": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.14.10",
+    "@types/node": "^18.11.18",
+    "@types/react": "^18.0.26",
+    "electron": "^26.2.2",
+    "electron-builder": "^24.6.4",
+    "next": "^12.3.4",
+    "nextron": "^8.12.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.2.2"
+  }
+}

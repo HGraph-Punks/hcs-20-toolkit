@@ -1,0 +1,12 @@
+appId: com.turtlemoon.hcstools
+productName: HCS-20 Tools
+copyright: Copyright © 2024 Turtle Moon
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+publish: null
