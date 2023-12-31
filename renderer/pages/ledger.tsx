@@ -32,6 +32,7 @@ export default function Ledger() {
       messages.forEach(msg => {
         try {
           const parsedMessage = JSON.parse(atob(msg.message));
+          parsedMessage.payer_account_id = msg.payer_account_id
           allMessages.push(parsedMessage);
         } catch (error) {
           console.error('Error parsing message:', error);
@@ -53,8 +54,10 @@ export default function Ledger() {
   function calculateBalances(messages) {
     const balances = {};
     const transactionsByAccount = {};
+    const failedTransactions = []; // New array for failed transactions
   
-    messages.forEach(({ op, tick, amt, from, to }) => {
+    messages.forEach(({ op, tick, amt, from, to, payer_account_id }) => {
+      // Initialize balances and transactions for each tick if not already present
       if (!balances[tick]) {
         balances[tick] = {};
       }
@@ -62,17 +65,36 @@ export default function Ledger() {
         transactionsByAccount[tick] = {};
       }
   
+      const amount = parseInt(amt);
+      let failureReason = '';
+  
       switch (op) {
         case 'mint':
-          balances[tick][to] = (balances[tick][to] || 0) + parseInt(amt);
+          balances[tick][to] = (balances[tick][to] || 0) + amount;
           break;
-        case 'burn':
-          balances[tick][from] -= parseInt(amt);
-          break;
-        case 'transfer':
-          balances[tick][from] -= parseInt(amt);
-          balances[tick][to] = (balances[tick][to] || 0) + parseInt(amt);
-          break;
+          case 'burn':
+            if (balances[tick][from] >= amount && payer_account_id === from) {
+              balances[tick][from] -= amount;
+            } else {
+              failureReason = balances[tick][from] < amount 
+                ? 'Insufficient balance for burn operation.'
+                : 'Payer account ID does not match the account from which points are being burned.';
+              failedTransactions.push({ op, tick, amt, from, to, payer_account_id, failureReason });
+              return;
+            }
+            break;
+          case 'transfer':
+            if (balances[tick][from] >= amount && payer_account_id === from) {
+              balances[tick][from] -= amount;
+              balances[tick][to] = (balances[tick][to] || 0) + amount;
+            } else {
+              failureReason = balances[tick][from] < amount 
+                ? 'Insufficient balance for transfer operation.'
+                : 'Payer account ID does not match the sender\'s account.';
+              failedTransactions.push({ op, tick, amt, from, to, payer_account_id, failureReason });
+              return;
+            }
+            break;
       }
   
       // Record the transaction
@@ -85,9 +107,11 @@ export default function Ledger() {
       transactionsByAccount[tick][from].push({ op, amt, to, from });
       transactionsByAccount[tick][to].push({ op, amt, to, from });
     });
-    console.log(balances)
-    return { balances, transactionsByAccount };
+  
+    console.log(balances);
+    return { balances, transactionsByAccount, failedTransactions };
   }
+  
   
 
 
@@ -113,6 +137,10 @@ export default function Ledger() {
         <Button variant="contained" color="primary" onClick={displayBalances}>
           Get Balances
         </Button>
+
+        <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
+            Balances
+          </Typography>
         {balances && (
         <TableContainer component={Paper}>
         <Table>
@@ -161,7 +189,42 @@ export default function Ledger() {
       </TableBody>
         </Table>
       </TableContainer>
+      )}{balances && balances.balances.failedTransactions && balances.balances.failedTransactions.length > 0 && (
+        <Fragment>
+          <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
+            Failed Transactions
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Operation</TableCell>
+                  <TableCell>Token</TableCell>
+                  <TableCell>Amount</TableCell>
+                  <TableCell>From</TableCell>
+                  <TableCell>To</TableCell>
+                  <TableCell>Payer Account ID</TableCell>
+                  <TableCell>Reason</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {balances.balances.failedTransactions.map((tx, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{tx.op}</TableCell>
+                    <TableCell>{tx.tick}</TableCell>
+                    <TableCell>{tx.amt}</TableCell>
+                    <TableCell>{tx.from}</TableCell>
+                    <TableCell>{tx.to}</TableCell>
+                    <TableCell>{tx.payer_account_id}</TableCell>
+                    <TableCell>{tx.failureReason}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Fragment>
       )}
+      
         {balances && (
           <Typography variant="body1" gutterBottom>
             <pre>{JSON.stringify(balances, null, 2)}</pre>
