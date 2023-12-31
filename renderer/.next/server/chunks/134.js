@@ -17,14 +17,12 @@ exports.modules = {
 
 
 const WalletContext = /*#__PURE__*/ (0,react__WEBPACK_IMPORTED_MODULE_1__.createContext)();
-// const OPERATOR_ID = '0.0.1013';
-// const OPERATOR_KEY = '302e020100300506032b657004220420012bb2dc6f1c116d9251b697ea3acf93fc3648d33ebf9ab6e099fc6426eecfa6';
 const WalletProvider = ({ children  })=>{
     const { 0: walletInfo , 1: setWalletInfo  } = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)({
-        privateKey: "302e020100300506032b657004220420012bb2dc6f1c116d9251b697ea3acf93fc3648d33ebf9ab6e099fc6426eecfa6",
-        accountId: "0.0.1013",
+        privateKey: "",
+        accountId: "",
         network: "testnet",
-        topicId: "0.0.7175851",
+        topicId: "",
         submitKey: ""
     });
     return /*#__PURE__*/ react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx(WalletContext.Provider, {

@@ -1,9 +1,9 @@
 {
   "/_app": "pages/_app.js",
-  "/_document": "pages/_document.js",
-  "/createtopic": "pages/createtopic.html",
-  "/ledger": "pages/ledger.html",
-  "/home": "pages/home.html",
   "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/ledger": "pages/ledger.html",
+  "/createtopic": "pages/createtopic.html",
+  "/home": "pages/home.html",
   "/404": "pages/404.html"
 }

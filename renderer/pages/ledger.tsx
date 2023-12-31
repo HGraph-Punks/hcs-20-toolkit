@@ -93,9 +93,6 @@ export default function Ledger() {
 
   return (
     <React.Fragment>
-      <Head>
-        <title>HCS-20 Toolset - Ledger</title>
-      </Head>
       <Container>
         <br /> 
       <Link href="/home">
@@ -104,7 +101,7 @@ export default function Ledger() {
         <br />
         <br />
         <Typography variant="h4" gutterBottom>
-          HCS-20 Token Balances Viewer
+          HCS-20 Balances Viewer
         </Typography>
         <TextField
           label="Enter Topic ID"

@@ -31,6 +31,7 @@ export default function MyApp(props: MyAppProps) {
     <WalletProvider>
     <CacheProvider value={emotionCache}>
       <Head>
+        <title>Turtle Moon HCS Toolkit</title>
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
