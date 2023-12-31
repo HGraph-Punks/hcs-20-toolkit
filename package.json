@@ -1,9 +1,9 @@
 {
   "private": true,
-  "name": "HCS-20 Toolkit",
-  "description": "Toolkit for HCS-20 points creation on HCS and Hedera",
-  "version": "1.0.0",
-  "author": "patches",
+  "name": "hcs-toolkit",
+  "description": "Toolkit for Hedera Consensus service",
+  "version": "0.0.1",
+  "author": "turtle moon",
   "main": "app/background.js",
   "scripts": {
     "dev": "nextron",
