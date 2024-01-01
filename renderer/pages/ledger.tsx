@@ -54,12 +54,15 @@ export default function Ledger() {
   function calculateBalances(messages) {
     const balances = {};
     const transactionsByAccount = {};
-    const failedTransactions = []; // New array for failed transactions
-  
-    messages.forEach(({ op, tick, amt, from, to, payer_account_id }) => {
-      // Initialize balances and transactions for each tick if not already present
+    const failedTransactions = [];
+    const tokenConstraints = {}; // Store max and lim constraints for each token
+    const tokenDetails = {};
+
+    messages.forEach(({ op, tick, amt, from, to, payer_account_id, max, lim, metadata }) => {
+      // Initialize token constraints and balances
       if (!balances[tick]) {
         balances[tick] = {};
+        tokenConstraints[tick] = { max: Infinity, lim: Infinity, totalMinted: 0 };
       }
       if (!transactionsByAccount[tick]) {
         transactionsByAccount[tick] = {};
@@ -69,32 +72,60 @@ export default function Ledger() {
       let failureReason = '';
   
       switch (op) {
+        case 'deploy':
+          // Set max and lim constraints for the token
+          tokenConstraints[tick].max = max ? parseInt(max) : Infinity;
+          tokenConstraints[tick].lim = lim ? parseInt(lim) : Infinity;
+
+          tokenDetails[tick] = {
+            maxSupply: parseInt(max) || 'Not Set',
+            currentSupply: 0, // Initialize current supply
+            lim: parseInt(lim) || 'Not Set',
+            metadata: metadata || 'No Metadata'
+          };
+          break;
         case 'mint':
+
+          if (tokenDetails[tick]) {
+            tokenDetails[tick].currentSupply += parseInt(amt);
+          }
+
+          if (amount > tokenConstraints[tick].lim) {
+            failureReason = 'Mint amount exceeds limit per transaction.';
+            failedTransactions.push({ op, tick, amt, to, payer_account_id, failureReason });
+            return;
+          }
+          if (tokenConstraints[tick].totalMinted + amount > tokenConstraints[tick].max) {
+            failureReason = 'Mint amount exceeds maximum supply.';
+            failedTransactions.push({ op, tick, amt, to, payer_account_id, failureReason });
+            return;
+          }
+          tokenConstraints[tick].totalMinted += amount;
           balances[tick][to] = (balances[tick][to] || 0) + amount;
           break;
-          case 'burn':
-            if (balances[tick][from] >= amount && payer_account_id === from) {
-              balances[tick][from] -= amount;
-            } else {
-              failureReason = balances[tick][from] < amount 
-                ? 'Insufficient balance for burn operation.'
-                : 'Payer account ID does not match the account from which points are being burned.';
-              failedTransactions.push({ op, tick, amt, from, to, payer_account_id, failureReason });
-              return;
-            }
-            break;
-          case 'transfer':
-            if (balances[tick][from] >= amount && payer_account_id === from) {
-              balances[tick][from] -= amount;
-              balances[tick][to] = (balances[tick][to] || 0) + amount;
-            } else {
-              failureReason = balances[tick][from] < amount 
-                ? 'Insufficient balance for transfer operation.'
-                : 'Payer account ID does not match the sender\'s account.';
-              failedTransactions.push({ op, tick, amt, from, to, payer_account_id, failureReason });
-              return;
-            }
-            break;
+        case 'burn':
+          if (balances[tick][from] >= amount && payer_account_id === from) {
+            balances[tick][from] -= amount;
+          } else {
+            failureReason = balances[tick][from] < amount 
+              ? 'Insufficient balance for burn operation.'
+              : 'Payer account ID does not match the account from which points are being burned.';
+            failedTransactions.push({ op, tick, amt, from, to, payer_account_id, failureReason });
+            return;
+          }
+          break;
+        case 'transfer':
+          if (balances[tick][from] >= amount && payer_account_id === from) {
+            balances[tick][from] -= amount;
+            balances[tick][to] = (balances[tick][to] || 0) + amount;
+          } else {
+            failureReason = balances[tick][from] < amount 
+              ? 'Insufficient balance for transfer operation.'
+              : 'Payer account ID does not match the sender\'s account.';
+            failedTransactions.push({ op, tick, amt, from, to, payer_account_id, failureReason });
+            return;
+          }
+          break;
       }
   
       // Record the transaction
@@ -109,7 +140,7 @@ export default function Ledger() {
     });
   
     console.log(balances);
-    return { balances, transactionsByAccount, failedTransactions };
+    return { balances, transactionsByAccount, failedTransactions, tokenDetails };
   }
   
   
@@ -134,10 +165,46 @@ export default function Ledger() {
           fullWidth
           margin="normal"
         />
+        <br />
+        <br />
         <Button variant="contained" color="primary" onClick={displayBalances}>
           Get Balances
         </Button>
-
+        {balances && balances.balances.tokenDetails && (
+          <Fragment>
+          <br />
+          <br />
+            <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
+              Token Details
+            </Typography>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Token</TableCell>
+                    <TableCell>Max Supply</TableCell>
+                    <TableCell>Current Supply</TableCell>
+                    <TableCell>Limit per Mint Transaction</TableCell>
+                    <TableCell>Metadata</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {Object.entries(balances.balances.tokenDetails).map(([token, details]:[any, any]) => (
+                    <TableRow key={token}>
+                      <TableCell>{token}</TableCell>
+                      <TableCell>{details && details.maxSupply}</TableCell>
+                      <TableCell>{details && details.currentSupply}</TableCell>
+                      <TableCell>{details && details.lim}</TableCell>
+                      <TableCell>{details && details.metadata}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Fragment>
+        )}
+        <br />
+        <br />
         <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
             Balances
           </Typography>
@@ -147,6 +214,7 @@ export default function Ledger() {
           <TableHead>
             <TableRow>
               <TableCell>Account ID</TableCell>
+              <TableCell>Token</TableCell>
               <TableCell align="right">Balance</TableCell>
               <TableCell align="right">Transactions</TableCell>
             </TableRow>
@@ -157,28 +225,36 @@ export default function Ledger() {
             {Object.entries(accounts).map(([accountId, balance]) => (
               <TableRow key={accountId}>
                 <TableCell>{accountId}</TableCell>
+                <TableCell>{token}</TableCell>
                 <TableCell align="right">{balance}</TableCell>
                 <TableCell align="right">
-                  <Accordion>
+                <Accordion>
                     <AccordionSummary>
                       <Typography>View Transactions</Typography>
                     </AccordionSummary>
-                    <AccordionDetails style={{backgroundColor:"#010101"}}>
-                    {balances.balances.transactionsByAccount && balances.balances.transactionsByAccount[token] && balances.balances.transactionsByAccount[token][accountId] ? (
-                      balances.balances.transactionsByAccount[token][accountId].map((tx, index) => (
-                        <div key={index} style={{ marginBottom: '10px', textAlign: 'left' }}>
-                          <div style={{
-                            maxWidth: '100%',
-                          }}>
-                            <Typography variant="body1" color="textPrimary">
-                              {tx.op} {tx.amt && tx.amt + ' ' +token || 'N/A'} {tx.from && 'from '+tx.from } {tx.to && ' to '+tx.to || 'N/A'}
-                            </Typography>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <Typography>No transactions</Typography>
-                    )}
+                    <AccordionDetails style={{ backgroundColor: "#010101" }}>
+                      <TableContainer>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Operation</TableCell>
+                              <TableCell>Amount</TableCell>
+                              <TableCell>From</TableCell>
+                              <TableCell>To</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {balances.balances.transactionsByAccount[token][accountId].map((tx, index) => (
+                              <TableRow key={index}>
+                                <TableCell>{tx.op}</TableCell>
+                                <TableCell>{tx.amt}</TableCell>
+                                <TableCell>{tx.from}</TableCell>
+                                <TableCell>{tx.to}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
                     </AccordionDetails>
                   </Accordion>
                 </TableCell>
@@ -191,6 +267,8 @@ export default function Ledger() {
       </TableContainer>
       )}{balances && balances.balances.failedTransactions && balances.balances.failedTransactions.length > 0 && (
         <Fragment>
+        <br />
+        <br />
           <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
             Failed Transactions
           </Typography>
@@ -225,11 +303,11 @@ export default function Ledger() {
         </Fragment>
       )}
       
-        {balances && (
+        {/* {balances && (
           <Typography variant="body1" gutterBottom>
             <pre>{JSON.stringify(balances, null, 2)}</pre>
           </Typography>
-        )}
+        )} */}
       </Container>
     </React.Fragment>
   );
