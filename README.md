@@ -1,9 +1,11 @@
 <p align="center"><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F4CrgOoWVfArUeF98XmqT%2Fuploads%2F2StnD0EKsZPhrbu0A5Hg%2FScreenshot%202024-01-02%20at%2011.16.36%20PM.png?alt=media&token=1bf14887-e90f-4c49-88bd-9bb3f5a39e48"></p>
 
+[Link to HCS-20 documentation](https://patches-1.gitbook.io/hcs-20-auditable-points)
+
 ## Usage for Hedera Consensus Service ease-of-use
 
 ### Idea
-The HCS-20 standard is designed to leverage the Hedera Consensus Service (HCS) for creating, managing, and transferring digital assets represented as points. It utilizes topic IDs on the Hedera network to record JSON-encoded transactions, providing a framework for a fungible token system.
+This tool allows users to easily create interact with audtiable points on the hedera conensus service. You can create a new topic, add wallet and topic Id details, create JSON for HCS-20 points, submit to the topic Id, and read all the point balances based on indexing the topic Id. 
 
 ### Operations
 - **Deploy Point Contract**: Initialize a new point asset on the network.
