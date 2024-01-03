@@ -1,7 +1,8 @@
 <p align="center"><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F4CrgOoWVfArUeF98XmqT%2Fuploads%2F2StnD0EKsZPhrbu0A5Hg%2FScreenshot%202024-01-02%20at%2011.16.36%20PM.png?alt=media&token=1bf14887-e90f-4c49-88bd-9bb3f5a39e48"></p>
 
 Supported on Mac, Windows, Linux
-[Link to Download]([https://patches-1.gitbook.io/hcs-20-auditable-points](https://patches-1.gitbook.io/hcs-20-auditable-points/#hcs-20-tool-downloads))
+
+[Install Link](https://patches-1.gitbook.io/hcs-20-auditable-points/#hcs-20-tool-downloads)
 
 ## Usage for Hedera Consensus Service ease-of-use
 
