@@ -14,10 +14,10 @@ export default function HomePage() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const fields = {
-    deploy: ['tokenName', 'tick', 'mintLimit', 'maxSupply', 'metadata'],
-    mint: ['tick', 'amount', 'toAddress'],
-    burn: ['tick', 'amount', 'fromAddress'],
-    transfer: ['tick', 'amount', 'fromAddress', 'toAddress'],
+    deploy: ['tokenName', 'tick', 'mintLimit', 'maxSupply', 'metadata', 'memo'],
+    mint: ['tick', 'amount', 'toAddress', 'memo'],
+    burn: ['tick', 'amount', 'fromAddress', 'memo'],
+    transfer: ['tick', 'amount', 'fromAddress', 'toAddress', 'memo'],
   };
 
   const handleChange = (e) => {
@@ -35,17 +35,17 @@ export default function HomePage() {
   };
 
   const createTransactionJson = (transactionParams) => {
-    const {  tick, amount, fromAddress, toAddress, tokenName, mintLimit, maxSupply, metadata } = transactionParams;
+    const {  tick, amount, fromAddress, toAddress, tokenName, mintLimit, maxSupply, metadata, memo } = transactionParams;
     if (!tick) return "tick required"
     switch (action) {
       case 'deploy':
-        return { p:"hcs-20", op:action, name:tokenName, tick:tick.toLowerCase(), lim:mintLimit, max:maxSupply, metadata };
+        return { p:"hcs-20", op:action, name:tokenName, tick:tick.toLowerCase(), lim:mintLimit, max:maxSupply, metadata, m:memo };
       case 'mint':
-        return { p:"hcs-20", op:action, tick:tick.toLowerCase(), amt:amount, to:toAddress };
+        return { p:"hcs-20", op:action, tick:tick.toLowerCase(), amt:amount, to:toAddress, m:memo };
       case 'burn':
-        return { p:"hcs-20", op:action, tick:tick.toLowerCase(), amt:amount, from:fromAddress };
+        return { p:"hcs-20", op:action, tick:tick.toLowerCase(), amt:amount, from:fromAddress, m:memo};
       case 'transfer':
-        return { p:"hcs-20", op:action, tick:tick.toLowerCase(), amt:amount, from:fromAddress, to:toAddress };
+        return { p:"hcs-20", op:action, tick:tick.toLowerCase(), amt:amount, from:fromAddress, to:toAddress, m:memo };
       default:
         throw new Error('Invalid action type');
     }

@@ -1,14 +1,14 @@
 import React, { useState, useContext, Fragment } from 'react';
-import Head from 'next/head';
-import { Button,List, ListItem, ListItemText, Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Container, Paper, TableContainer, Table, TableBody,TableRow,TableHead,TableCell } from '@mui/material';
+import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Container, Paper, TableContainer, Table, TableBody, TableRow, TableHead, TableCell } from '@mui/material';
 import axios from 'axios';
-import { WalletContext } from '../components/WalletContext';  // Import WalletContext
+import { WalletContext } from '../components/WalletContext';
 import Link from 'next/link';
 
 export default function Ledger() {
-  const { walletInfo } = useContext(WalletContext);  // Use WalletContext
+  const { walletInfo } = useContext(WalletContext);
   const [topicId, setTopicId] = useState(walletInfo.topicId);
   const [balances, setBalances] = useState(null);
+  const [hasSubmitKey, setHasSubmitKey] = useState(false); // New state for submit key toggle
 
   const displayBalances = async () => {
     if (!topicId) {
@@ -16,6 +16,7 @@ export default function Ledger() {
       return;
     }
     const fetchedBalances = await getHcs20DataFromTopic(topicId);
+    console.log('fetchedBalances',fetchedBalances)
     setBalances(fetchedBalances);
   };
 
@@ -43,22 +44,24 @@ export default function Ledger() {
       if (links && links.next) {
         return await getHcs20DataFromTopic(topicId, allMessages);
       }
-
-      return { balances: calculateBalances(allMessages), invalidMessages };
+      return { balances: await calculateBalances(allMessages, topicId), invalidMessages };
 
     } catch (error) {
       console.error('Error fetching topic data:', error);
     }
   }
 
-  function calculateBalances(messages) {
+
+  async function calculateBalances(messages, topicId) {
     const balances = {};
     const transactionsByAccount = {};
     const failedTransactions = [];
     const tokenConstraints = {}; // Store max and lim constraints for each token
     const tokenDetails = {};
 
-    messages.forEach(({ op, tick, amt, from, to, payer_account_id, max, lim, metadata }) => {
+    const requiresMatchingPayer = !hasSubmitKey;
+
+    messages.forEach(({ op, tick, amt, from, to, payer_account_id, max, lim, metadata, m }) => {
       // Initialize token constraints and balances
       if (!balances[tick]) {
         balances[tick] = {};
@@ -81,7 +84,8 @@ export default function Ledger() {
             maxSupply: parseInt(max) || 'Not Set',
             currentSupply: 0, // Initialize current supply
             lim: parseInt(lim) || 'Not Set',
-            metadata: metadata || 'No Metadata'
+            metadata: metadata || 'No Metadata',
+            memo: m || '',
           };
           break;
         case 'mint':
@@ -104,7 +108,7 @@ export default function Ledger() {
           balances[tick][to] = (balances[tick][to] || 0) + amount;
           break;
         case 'burn':
-          if (balances[tick][from] >= amount && payer_account_id === from) {
+          if (balances[tick][from] >= amount && (!requiresMatchingPayer || payer_account_id === from)) {
             balances[tick][from] -= amount;
           } else {
             failureReason = balances[tick][from] < amount 
@@ -115,7 +119,7 @@ export default function Ledger() {
           }
           break;
         case 'transfer':
-          if (balances[tick][from] >= amount && payer_account_id === from) {
+          if (balances[tick][from] >= amount && (!requiresMatchingPayer || payer_account_id === from)) {
             balances[tick][from] -= amount;
             balances[tick][to] = (balances[tick][to] || 0) + amount;
           } else {
@@ -135,11 +139,11 @@ export default function Ledger() {
       if (!transactionsByAccount[tick][to]) {
         transactionsByAccount[tick][to] = [];
       }
-      transactionsByAccount[tick][from].push({ op, amt, to, from });
-      transactionsByAccount[tick][to].push({ op, amt, to, from });
+      transactionsByAccount[tick][from].push({ op, amt, to, from, m });
+      transactionsByAccount[tick][to].push({ op, amt, to, from, m });
     });
   
-    console.log(balances);
+    console.log('balances',balances);
     return { balances, transactionsByAccount, failedTransactions, tokenDetails };
   }
   
@@ -165,6 +169,14 @@ export default function Ledger() {
           fullWidth
           margin="normal"
         />
+        <br />
+        <br />
+        <Button
+          variant="outlined"
+          onClick={() => setHasSubmitKey(!hasSubmitKey)}
+        >
+          Has Submit Key: {hasSubmitKey ? "True" : "False"}   
+        </Button>
         <br />
         <br />
         <Button variant="contained" color="primary" onClick={displayBalances}>
