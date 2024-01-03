@@ -2,7 +2,7 @@
   "private": true,
   "name": "hcs-toolkit",
   "description": "Toolkit for Hedera Consensus service",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "turtle moon",
   "main": "app/background.js",
   "scripts": {
@@ -19,7 +19,8 @@
     "@hashgraph/sdk": "^2.39.0",
     "axios": "^1.6.3",
     "electron-serve": "^1.1.0",
-    "electron-store": "^8.1.0"
+    "electron-store": "^8.1.0",
+    "marked": "^11.1.1"
   },
   "devDependencies": {
     "@emotion/cache": "^11.11.0",

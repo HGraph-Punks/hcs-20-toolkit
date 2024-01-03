@@ -1,5 +1,5 @@
 import React, { useState, useContext, Fragment } from 'react';
-import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Container, Paper, TableContainer, Table, TableBody, TableRow, TableHead, TableCell } from '@mui/material';
+import { Button,FormControlLabel, Switch, Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Container, Paper, TableContainer, Table, TableBody, TableRow, TableHead, TableCell } from '@mui/material';
 import axios from 'axios';
 import { WalletContext } from '../components/WalletContext';
 import Link from 'next/link';
@@ -171,12 +171,20 @@ export default function Ledger() {
         />
         <br />
         <br />
-        <Button
-          variant="outlined"
-          onClick={() => setHasSubmitKey(!hasSubmitKey)}
-        >
-          Has Submit Key: {hasSubmitKey ? "True" : "False"}   
-        </Button>
+        <FormControlLabel
+        sx={{
+          display: 'block',
+        }}
+        control={
+          <Switch
+            checked={hasSubmitKey}
+            onChange={() => setHasSubmitKey(!hasSubmitKey)}
+            name="loading"
+            color="primary"
+          />
+        }
+        label="Submit Key"
+      />
         <br />
         <br />
         <Button variant="contained" color="primary" onClick={displayBalances}>

@@ -1,4 +1,4 @@
-<p align="center"><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F4CrgOoWVfArUeF98XmqT%2Fuploads%2FamnVSgqid1POJGpb8Drp%2FScreenshot%202024-01-01%20at%2011.28.27%20AM.png?alt=media&token=1fd456f7-bfc9-48cd-9de0-d80f1aa1639c"></p>
+<p align="center"><img src="https://3902101013-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F4CrgOoWVfArUeF98XmqT%2Fuploads%2FBPJGkdKPsPe5fQupyFrW%2FScreenshot%202024-01-01%20at%2011.28.27%20AM.png?alt=media&token=52cf96bb-b87a-4a2a-ae63-d733ba883ff5"></p>
 
 ## Usage for Hedera Consensus Service ease-of-use
 
@@ -39,6 +39,13 @@ Frontend applications can interact with the HCS-20 standard by submitting the JS
 
 This standard offers a robust framework for creating a auditable point system on the Hedera network, leveraging the efficiency and security of the HCS.
 
+**Common Attributes:**
+- `p`: Protocol identifier (required).
+- `op`: Operation type (required).
+- `tick`: Unique identifier for the point (required).
+- `m`: Memo field for additional information (optional).
+
+
 ### Deploy Points
 ```json
 {
@@ -48,7 +55,8 @@ This standard offers a robust framework for creating a auditable point system on
   "tick": "unique_point_identifier",
   "max": "max_supply",
   "lim": "optional_limit_of_mint_per_transaction",
-  "metadata": "optional_metadata"
+  "metadata": "optional_metadata",
+  "m": "optional_memo"
 }
 ```
 **Attributes Table:**
@@ -61,7 +69,8 @@ This standard offers a robust framework for creating a auditable point system on
 | `tick`   | Yes      | Unique identifier for the point, akin to a ticker symbol     |
 | `max`    | Yes      | Maximum supply of the point, sets the upper limit            |
 | `lim`    | No       | Limit per transaction for minting, optional                  |
-| `metadata` | No     | Optional additional data related to the point                |
+| `metadata` | No     | Optional additional data related to the points (HIP-412 standard)   |
+| `m`   | No       | Optional additional memo related to the operation            |
 
 ### Mint Points
 ```json
@@ -70,7 +79,8 @@ This standard offers a robust framework for creating a auditable point system on
   "op": "mint",
   "tick": "unique_point_identifier",
   "amt": "number_of_points",
-  "to": "recipient_hedera_address"
+  "to": "recipient_hedera_address",
+  "m": "optional_memo"
 }
 ```
 **Attributes Table:**
@@ -82,6 +92,7 @@ This standard offers a robust framework for creating a auditable point system on
 | `tick`   | Yes      | Unique identifier of the point to be minted                 |
 | `amt`    | Yes      | Amount of points to mint                                   |
 | `to`     | Yes      | Address of the recipient receiving the minted points       |
+| `m`   | No       | Optional additional memo related to the operation            |
 
 ### Burn Points
 ```json
@@ -90,7 +101,8 @@ This standard offers a robust framework for creating a auditable point system on
   "op": "burn",
   "tick": "unique_point_identifier",
   "amt": "number_of_points",
-  "from": "holder_hedera_address"
+  "from": "holder_hedera_address",
+  "memo": "optional_memo"
 }
 ```
 **Attributes Table:**
@@ -102,6 +114,7 @@ This standard offers a robust framework for creating a auditable point system on
 | `tick`   | Yes      | Unique identifier of the point to be burned                  |
 | `amt`    | Yes      | Amount of points to burn                                    |
 | `from`   | Yes      | Address of the holder from whom points are being burned     |
+| `m`   | No       | Optional additional memo related to the operation            |
 
 ### Transfer Points
 ```json
@@ -111,7 +124,8 @@ This standard offers a robust framework for creating a auditable point system on
   "tick": "unique_point_identifier",
   "amt": "number_of_points",
   "from": "sender_hedera_address",
-  "to": "recipient_hedera_address"
+  "to": "recipient_hedera_address",
+  "m": "optional_memo"
 }
 ```
 **Attributes Table:**
@@ -124,5 +138,6 @@ This standard offers a robust framework for creating a auditable point system on
 | `amt`    | Yes      | Amount of points to transfer                                 |
 | `from`   | Yes      | Address of the sender                                        |
 | `to`     | Yes      | Address of the recipient                                     |
+| `m`   | No       | Optional additional memo related to the operation            |
 
 Each of these tables provides a clear breakdown of the key attributes necessary for the respective operations in the HCS-20 standard, along with whether they are required and a brief description of their purpose.

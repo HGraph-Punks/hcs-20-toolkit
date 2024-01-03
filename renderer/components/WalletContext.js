@@ -6,8 +6,8 @@ export const WalletProvider = ({ children }) => {
   const [walletInfo, setWalletInfo] = useState({
     privateKey: '',
     accountId: '',
-    network: 'testnet',
-    topicId: '',
+    network: 'mainnet',
+    topicId: '0.0.4350190',
     submitKey:''
   });
   return (

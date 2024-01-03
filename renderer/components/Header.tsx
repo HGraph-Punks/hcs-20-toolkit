@@ -30,7 +30,13 @@ const Header: FC = () => {
             </ListItem>
           </Link>
         ))}
+        <a style={{color:'white', textDecoration: 'none'}} href={`https://patches-1.gitbook.io/hcs-20-auditable-points`} target="_blank">
+            <ListItem>
+              <ListItemText primary={"Docs"} />
+            </ListItem>
+          </a>
       </List>
+
     </div>
   );
 
@@ -49,7 +55,7 @@ const Header: FC = () => {
             {list()}
           </Drawer>
           <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Turtle Moon HCS Toolkit (0.0.1)
+            Turtle Moon HCS Toolkit (0.0.2)
           </Typography>
           {walletContext && walletContext.walletInfo.accountId ? (
             <>
