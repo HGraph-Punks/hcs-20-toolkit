@@ -104,7 +104,7 @@ This standard offers a robust framework for creating a auditable point system on
   "tick": "unique_point_identifier",
   "amt": "number_of_points",
   "from": "holder_hedera_address",
-  "memo": "optional_memo"
+  "m": "optional_memo"
 }
 ```
 **Attributes Table:**
