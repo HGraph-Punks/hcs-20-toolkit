@@ -175,13 +175,13 @@ export default function Ledger() {
           <br />
           <br />
             <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
-              Token Details
+              Details
             </Typography>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Token</TableCell>
+                    <TableCell>Tick</TableCell>
                     <TableCell>Max Supply</TableCell>
                     <TableCell>Current Supply</TableCell>
                     <TableCell>Limit per Mint Transaction</TableCell>
@@ -214,7 +214,7 @@ export default function Ledger() {
           <TableHead>
             <TableRow>
               <TableCell>Account ID</TableCell>
-              <TableCell>Token</TableCell>
+              <TableCell>Tick</TableCell>
               <TableCell align="right">Balance</TableCell>
               <TableCell align="right">Transactions</TableCell>
             </TableRow>
@@ -277,7 +277,7 @@ export default function Ledger() {
               <TableHead>
                 <TableRow>
                   <TableCell>Operation</TableCell>
-                  <TableCell>Token</TableCell>
+                  <TableCell>Tick</TableCell>
                   <TableCell>Amount</TableCell>
                   <TableCell>From</TableCell>
                   <TableCell>To</TableCell>

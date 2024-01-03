@@ -1,13 +1,43 @@
-<p align="center"><img src="https://i.imgur.com/flcMvDC.png"></p>
+<p align="center"><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F4CrgOoWVfArUeF98XmqT%2Fuploads%2FamnVSgqid1POJGpb8Drp%2FScreenshot%202024-01-01%20at%2011.28.27%20AM.png?alt=media&token=1fd456f7-bfc9-48cd-9de0-d80f1aa1639c"></p>
 
 ## Usage for Hedera Consensus Service ease-of-use
 
-## Purpose
-Make a simple tool for users to easily engage with the Hedera Consensus Service. Initial toolkit is focused on creating audiable points for loyalty on HCS
+### Idea
+The HCS-20 standard is designed to leverage the Hedera Consensus Service (HCS) for creating, managing, and transferring digital assets represented as points. It utilizes topic IDs on the Hedera network to record JSON-encoded transactions, providing a framework for a fungible token system.
 
-### HCS-20
-HCS-20 is a standard proposal for the creation of audiable points on HCS.
-Here are the tables with functions and detailed descriptions:
+### Operations
+- **Deploy Point Contract**: Initialize a new point asset on the network.
+- **Mint Point**: Create new points and assign them to a recipient.
+- **Burn Point**: Permanently remove a specified number of points from circulation.
+- **Transfer Point**: Move points from one account to another.
+
+### State Calculation
+The state (such as balances) of HCS-20 points is determined by aggregating the activities of deploy, mint, and transfer operations inscribed onto the HCS topic IDs.
+
+- **Deployments** initialize the point contract without directly affecting state.
+- **Mints** add to the balance of the first owner specified in the mint operation.
+- **Transfers** adjust balances by deducting from the sender and crediting the receiver.
+
+### Frontend Implementation
+Frontend applications can interact with the HCS-20 standard by submitting the JSON operations to specified topic IDs on the Hedera network and reading the state from these topics.
+
+### How to Use HCS-20
+1. **Deploying a Point Contract**: Optionally create your own point asset by inscribing a deploy operation.
+2. **Minting Points**: Mint new points by inscribing the mint operation with the specified amount and recipient.
+3. **Transferring Points**: Transfer points by inscribing the transfer operation with the relevant details.
+
+### Validity of Transactions
+- A transfer is valid if the amount does not exceed the available balance at the time of inscription.
+- The order of transactions within the same block matters for determining validity.
+- Redundancies can be resolved by transferring the point back to oneself.
+
+### Important Notes
+- Use only with Hedera-compatible wallets.
+- Each inscription type (deploy, mint, transfer) plays a unique role in the point's lifecycle.
+- The mint and transfer operations are the only ones that cause a change in balance.
+- Be cautious with address changes in wallets and ensure correct addresses are used for transactions.
+
+This standard offers a robust framework for creating a auditable point system on the Hedera network, leveraging the efficiency and security of the HCS.
 
 ### Deploy Points
 ```json
