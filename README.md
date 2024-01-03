@@ -1,4 +1,4 @@
-<p align="center"><img src="https://3902101013-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F4CrgOoWVfArUeF98XmqT%2Fuploads%2FBPJGkdKPsPe5fQupyFrW%2FScreenshot%202024-01-01%20at%2011.28.27%20AM.png?alt=media&token=52cf96bb-b87a-4a2a-ae63-d733ba883ff5"></p>
+<p align="center"><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F4CrgOoWVfArUeF98XmqT%2Fuploads%2F2StnD0EKsZPhrbu0A5Hg%2FScreenshot%202024-01-02%20at%2011.16.36%20PM.png?alt=media&token=1bf14887-e90f-4c49-88bd-9bb3f5a39e48"></p>
 
 ## Usage for Hedera Consensus Service ease-of-use
 
