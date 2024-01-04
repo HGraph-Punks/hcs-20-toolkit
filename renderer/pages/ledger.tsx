@@ -15,16 +15,16 @@ export default function Ledger() {
       alert('Please enter a topic ID.');
       return;
     }
-    const fetchedBalances = await getHcs20DataFromTopic(topicId);
+    const fetchedBalances = await getHcs20DataFromTopic(topicId, null, null, null);
     console.log('fetchedBalances',fetchedBalances)
     setBalances(fetchedBalances);
   };
 
-  async function getHcs20DataFromTopic(topicId, allMessages = [], invalidMessages = []) {
+  async function getHcs20DataFromTopic(topicId, allMessages = [], invalidMessages = [], nextLink) {
     const baseUrl = walletInfo.network === 'mainnet'
       ? 'https://mainnet-public.mirrornode.hedera.com'
       : 'https://testnet.mirrornode.hedera.com';
-    const url = `${baseUrl}/api/v1/topics/${topicId}/messages`;
+    const url = nextLink ?  `${baseUrl}${nextLink}` : `${baseUrl}/api/v1/topics/${topicId}/messages`;
 
     try {
       const response = await axios.get(url);
@@ -42,7 +42,7 @@ export default function Ledger() {
       });
 
       if (links && links.next) {
-        return await getHcs20DataFromTopic(topicId, allMessages);
+        return await getHcs20DataFromTopic(topicId, allMessages, invalidMessages, links.next);
       }
       return { balances: await calculateBalances(allMessages, topicId), invalidMessages };
 
@@ -92,6 +92,9 @@ export default function Ledger() {
 
           if (tokenDetails[tick]) {
             tokenDetails[tick].currentSupply += parseInt(amt);
+          } else  {
+            failureReason = 'No Deploy transaction for this Mint tick';
+            failedTransactions.push({ op, tick, amt, to, payer_account_id, failureReason });
           }
 
           if (amount > tokenConstraints[tick].lim) {
