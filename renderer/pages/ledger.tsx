@@ -1,10 +1,11 @@
 import React, { useState, useContext, Fragment } from 'react';
-import { Button,FormControlLabel, Switch, Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Container, Paper, TableContainer, Table, TableBody, TableRow, TableHead, TableCell } from '@mui/material';
+import { Button,FormControlLabel, Switch, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Container, Paper, TableContainer, Table, TableBody, TableRow, TableHead, TableCell } from '@mui/material';
 import axios from 'axios';
 import { WalletContext } from '../components/WalletContext';
 import Link from 'next/link';
 
 export default function Ledger() {
+  const [isLoading, setIsLoading] = useState(false);
   const { walletInfo } = useContext(WalletContext);
   const [topicId, setTopicId] = useState(walletInfo.topicId);
   const [balances, setBalances] = useState(null);
@@ -15,16 +16,23 @@ export default function Ledger() {
       alert('Please enter a topic ID.');
       return;
     }
-    const fetchedBalances = await getHcs20DataFromTopic(topicId, null, null, null);
-    console.log('fetchedBalances',fetchedBalances)
+    setIsLoading(true);
+    const fetchedBalances = await getHcs20DataFromTopic(topicId);
+    console.log('fetchedBalances', fetchedBalances);
     setBalances(fetchedBalances);
+    setIsLoading(false);
   };
-
-  async function getHcs20DataFromTopic(topicId, allMessages = [], invalidMessages = [], nextLink) {
+  
+  async function getHcs20DataFromTopic(
+    topicId: string, 
+    allMessages: any[] = [], 
+    invalidMessages: string[] = [], 
+    nextLink?: string
+  ) {
     const baseUrl = walletInfo.network === 'mainnet'
       ? 'https://mainnet-public.mirrornode.hedera.com'
       : 'https://testnet.mirrornode.hedera.com';
-    const url = nextLink ?  `${baseUrl}${nextLink}` : `${baseUrl}/api/v1/topics/${topicId}/messages`;
+    const url = nextLink ?  `${baseUrl}${nextLink}` : `${baseUrl}/api/v1/topics/${topicId}/messages?limit=1000`;
 
     try {
       const response = await axios.get(url);
@@ -190,9 +198,20 @@ export default function Ledger() {
       />
         <br />
         <br />
-        <Button variant="contained" color="primary" onClick={displayBalances}>
-          Get Balances
-        </Button>
+        {isLoading ? (
+          <>
+          <Button variant="contained" color="primary" disabled>
+            <CircularProgress size={24} />
+          </Button>
+          <br />
+          <br />
+          Indexing...
+          </>
+        ) : (
+          <Button variant="contained" color="primary" onClick={displayBalances}>
+            Get Balances
+          </Button>
+        )}
         {balances && balances.balances.tokenDetails && (
           <Fragment>
           <br />
