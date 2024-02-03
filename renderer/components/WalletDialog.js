@@ -6,7 +6,8 @@ import { Dialog, DialogContent, DialogActions, Button, TextField, Switch, FormCo
 export default function WalletDialog({ open, onClose }) {
     const { walletInfo, setWalletInfo } = useContext(WalletContext);
     const [localPrivateKey, setLocalPrivateKey] = useState(walletInfo.privateKey);
-    const [localTopicId, setLocalTopicId] = useState(walletInfo.topicId);
+    const [localTopicId, setLocalTopicId] = useState(walletInfo.topicId); 
+    const [localRegistryTopicId, setLocalRegistryTopicId] = useState(walletInfo.registry); 
     const [localAccountId, setLocalAccountId] = useState(walletInfo.accountId);
     const [localSubmitKey, setLocalSubmitKey] = useState(walletInfo.submitKey);
     const [isMainnet, setIsMainnet] = useState(walletInfo.network === 'mainnet');
@@ -21,6 +22,7 @@ export default function WalletDialog({ open, onClose }) {
         accountId: localAccountId,
         network: isMainnet ? 'mainnet' : 'testnet',
         topicId: localTopicId,
+        registry:localRegistryTopicId,
         submitKey: localSubmitKey,
       });
       onClose();
@@ -51,6 +53,13 @@ export default function WalletDialog({ open, onClose }) {
           margin="normal"
           value={localTopicId}
           onChange={(e) => setLocalTopicId(e.target.value)}
+        />
+        <TextField
+          label="Registry Topic"
+          fullWidth
+          margin="normal"
+          value={localRegistryTopicId}
+          onChange={(e) => setLocalRegistryTopicId(e.target.value)}
         />
         <TextField
           label="Submit Key (Optional)"

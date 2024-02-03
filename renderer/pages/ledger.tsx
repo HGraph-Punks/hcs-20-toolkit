@@ -1,27 +1,87 @@
-import React, { useState, useContext, Fragment } from 'react';
-import { Button,FormControlLabel, Switch, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Typography, TextField, Container, Paper, TableContainer, Table, TableBody, TableRow, TableHead, TableCell } from '@mui/material';
+import React, { useState, useContext, useEffect, Fragment } from 'react';
+import {
+  Button, Accordion,CircularProgress, Typography, TextField, Container, Paper, TableContainer, Table,
+  TableBody, TableRow, TableHead, TableCell, FormControlLabel, Switch
+} from '@mui/material';
 import axios from 'axios';
 import { WalletContext } from '../components/WalletContext';
 import Link from 'next/link';
+import { promisify } from 'util';
+
+let ipcRenderer = null;
+if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
+  ipcRenderer = window.require('electron').ipcRenderer;
+}
 
 export default function Ledger() {
   const [isLoading, setIsLoading] = useState(false);
   const { walletInfo } = useContext(WalletContext);
-  const [topicId, setTopicId] = useState(walletInfo.topicId);
+  const [topicId, setTopicId] = walletInfo.topicId === '0.0.4350190' ? useState('0.0.4354800') : useState(walletInfo.topicId);
   const [balances, setBalances] = useState(null);
-  const [hasSubmitKey, setHasSubmitKey] = useState(false); // New state for submit key toggle
+  const [hasSubmitKey, setHasSubmitKey] = useState(false);
+  const [filter, setFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = Object.entries(balances?.balances || {}).slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(Object.keys(balances?.balances || {}).length / rowsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
 
   const displayBalances = async () => {
-    if (!topicId) {
-      alert('Please enter a topic ID.');
-      return;
-    }
     setIsLoading(true);
-    const fetchedBalances = await getHcs20DataFromTopic(topicId);
-    console.log('fetchedBalances', fetchedBalances);
-    setBalances(fetchedBalances);
-    setIsLoading(false);
+    try {
+      const fetchedData = await getHcs20DataFromTopic(topicId);
+      setBalances(fetchedData); // Populate balances with fetched data
+      setIsLoading(false);
+      // updateDatabase(fetchedData); // Update the database in the background
+    } catch (error) {
+      console.error('Error while fetching and processing data:', error);
+    } finally {
+
+    }
   };
+
+  // const updateDatabase = async (fetchedData) => {
+  //   try {
+  //     const { transactions, tokenDetails, failedTransactions } = fetchedData;
+      
+  //     // Perform database operations
+  //     for (const detail of tokenDetails) {
+  //       await updateAsync({ _id: `tokenDetail_${detail.tick}` }, detail, { upsert: true });
+  //     }
+      
+  //     for (const transaction of transactions) {
+  //       await insertAsync(transaction);
+  //     }
+      
+  //     for (const failedTransaction of failedTransactions) {
+  //       await insertAsync(failedTransaction);
+  //     }
+
+  //     console.log('Database updated successfully.');
+  //   } catch (error) {
+  //     console.error('Error updating the database:', error);
+  //   }
+  // };
+
+  // const handleGraphQLToggle = () => {
+  //   setUseGraphQL(!useGraphQL);
+  // };
   
   async function getHcs20DataFromTopic(
     topicId: string, 
@@ -29,6 +89,8 @@ export default function Ledger() {
     invalidMessages: string[] = [], 
     nextLink?: string
   ) {
+
+
     const baseUrl = walletInfo.network === 'mainnet'
       ? 'https://mainnet-public.mirrornode.hedera.com'
       : 'https://testnet.mirrornode.hedera.com';
@@ -52,15 +114,26 @@ export default function Ledger() {
       if (links && links.next) {
         return await getHcs20DataFromTopic(topicId, allMessages, invalidMessages, links.next);
       }
-      return { balances: await calculateBalances(allMessages, topicId), invalidMessages };
+
+      return { balances: await calculateBalances(allMessages), invalidMessages };
 
     } catch (error) {
       console.error('Error fetching topic data:', error);
     }
   }
+  
+  const getTopicIdData = async (topic_id, hgraphApiKey) => {
+    if (ipcRenderer) {
+      // Execute outside electron instance for cors
+      // fetch-topic-data resides in main/background.ts
+      return ipcRenderer.invoke('fetch-topic-data', topic_id, hgraphApiKey);
+    } else {
+      // Handle the case where ipcRenderer is not available
+      console.error('ipcRenderer is not available');
+    }
+  };
 
-
-  async function calculateBalances(messages, topicId) {
+  async function calculateBalances(messages) {
     const balances = {};
     const transactionsByAccount = {};
     const failedTransactions = [];
@@ -69,19 +142,27 @@ export default function Ledger() {
 
     const requiresMatchingPayer = !hasSubmitKey;
 
-    messages.forEach(({ op, tick, amt, from, to, payer_account_id, max, lim, metadata, m }) => {
-      // Initialize token constraints and balances
-      if (!balances[tick]) {
-        balances[tick] = {};
-        tokenConstraints[tick] = { max: Infinity, lim: Infinity, totalMinted: 0 };
-      }
-      if (!transactionsByAccount[tick]) {
-        transactionsByAccount[tick] = {};
-      }
-  
-      const amount = parseInt(amt);
-      let failureReason = '';
-  
+    for (const message of messages) {
+        const { op, tick, amt, from, to, payer_account_id, max, lim, metadata, m } = message;
+
+        // Initialize token constraints and balances
+        if (!balances[tick]) {
+            balances[tick] = {};
+            tokenConstraints[tick] = { max: Infinity, lim: Infinity, totalMinted: 0 };
+            transactionsByAccount[tick] = {}; // Initialize transactions for this tick
+        }
+
+        // Ensure that transactionsByAccount entries exist for 'from' and 'to' accounts
+        if (!transactionsByAccount[tick][from]) {
+          transactionsByAccount[tick][from] = []; // Initialize transactions for 'from' account
+        }
+        if (to && !transactionsByAccount[tick][to]) {
+            transactionsByAccount[tick][to] = []; // Initialize transactions for 'to' account
+        }
+
+        const amount = parseInt(amt);
+        let failureReason = '';
+
       switch (op) {
         case 'deploy':
           // Set max and lim constraints for the token
@@ -142,32 +223,83 @@ export default function Ledger() {
           }
           break;
       }
-  
-      // Record the transaction
-      if (!transactionsByAccount[tick][from]) {
-        transactionsByAccount[tick][from] = [];
+
+      // Ensure transactions are recorded for each involved account
+      if (op === 'mint' || op === 'burn' || op === 'transfer') {
+          if (op !== 'mint') { // 'mint' doesn't have a 'from' field
+              transactionsByAccount[tick][from].push({
+                  op, amt: amount, from, to, timestamp: message.consensus_timestamp,
+              });
+          }
+          if (to) { // For 'mint' and 'transfer'
+              transactionsByAccount[tick][to].push({
+                  op, amt: amount, from, to, timestamp: message.consensus_timestamp,
+              });
+          }
       }
-      if (!transactionsByAccount[tick][to]) {
-        transactionsByAccount[tick][to] = [];
-      }
-      transactionsByAccount[tick][from].push({ op, amt, to, from, m });
-      transactionsByAccount[tick][to].push({ op, amt, to, from, m });
-    });
-  
-    console.log('balances',balances);
+
+    }
+    
     return { balances, transactionsByAccount, failedTransactions, tokenDetails };
   }
-  
-  
 
+  const renderBalances = () => (
+    <Fragment>
+      <TextField
+        label="Filter by Account ID"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        fullWidth
+        margin="normal"
+      />
+      {/* Pagination Controls */}
+      {/* <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px' }}>
+        <Button onClick={handlePreviousPage} disabled={currentPage === 1}>
+          Previous
+        </Button>
+        <Typography>Page {currentPage} of {totalPages}</Typography>
+        <Button onClick={handleNextPage} disabled={currentPage === totalPages}>
+          Next
+        </Button>
+      </div> */}
+
+      <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
+        Point Details
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Tick</TableCell>
+              <TableCell>Max Supply</TableCell>
+              <TableCell>Current Supply</TableCell>
+              <TableCell>Limit per Mint Transaction</TableCell>
+              <TableCell>Metadata</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {balances && balances.balances && Object.entries(balances.balances.tokenDetails).map(([token, details]:[any, any]) => (
+              <TableRow key={token}>
+                <TableCell>{token}</TableCell>
+                <TableCell>{details && details.maxSupply}</TableCell>
+                <TableCell>{details && details.currentSupply}</TableCell>
+                <TableCell>{details && details.lim}</TableCell>
+                <TableCell>{details && details.metadata}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Fragment>
+  );
 
   return (
     <React.Fragment>
       <Container>
         <br /> 
-      <Link href="/home">
-        <Button variant="text">Go to Creator</Button>
-      </Link>
+        <Link href="/home">
+          <Button variant="text">Go to Creator</Button>
+        </Link>
         <br />
         <br />
         <Typography variant="h4" gutterBottom>
@@ -183,66 +315,40 @@ export default function Ledger() {
         <br />
         <br />
         <FormControlLabel
-        sx={{
-          display: 'block',
-        }}
-        control={
-          <Switch
-            checked={hasSubmitKey}
-            onChange={() => setHasSubmitKey(!hasSubmitKey)}
-            name="loading"
-            color="primary"
-          />
-        }
-        label="Submit Key"
-      />
+          sx={{ display: 'block' }}
+          control={
+            <Switch
+              checked={hasSubmitKey}
+              onChange={() => setHasSubmitKey(!hasSubmitKey)}
+              name="loading"
+              color="primary"
+            />
+          }
+          label="Submit Key"
+        />
         <br />
         <br />
         {isLoading ? (
           <>
-          <Button variant="contained" color="primary" disabled>
-            <CircularProgress size={24} />
-          </Button>
-          <br />
-          <br />
-          Indexing...
+            <Button variant="contained" color="primary" disabled>
+              <CircularProgress size={24} />
+            </Button>
+            <br />
+            <br />
+            Indexing...
           </>
         ) : (
           <Button variant="contained" color="primary" onClick={displayBalances}>
             Get Balances
           </Button>
         )}
-        {balances && balances.balances.tokenDetails && (
+        <br />
+        <br />
+        {isLoading ? (
+          <></>
+        ) : (
           <Fragment>
-          <br />
-          <br />
-            <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
-              Details
-            </Typography>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Tick</TableCell>
-                    <TableCell>Max Supply</TableCell>
-                    <TableCell>Current Supply</TableCell>
-                    <TableCell>Limit per Mint Transaction</TableCell>
-                    <TableCell>Metadata</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Object.entries(balances.balances.tokenDetails).map(([token, details]:[any, any]) => (
-                    <TableRow key={token}>
-                      <TableCell>{token}</TableCell>
-                      <TableCell>{details && details.maxSupply}</TableCell>
-                      <TableCell>{details && details.currentSupply}</TableCell>
-                      <TableCell>{details && details.lim}</TableCell>
-                      <TableCell>{details && details.metadata}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            {renderBalances()}
           </Fragment>
         )}
         <br />
@@ -250,64 +356,38 @@ export default function Ledger() {
         <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
             Balances
           </Typography>
-        {balances && (
-        <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Account ID</TableCell>
-              <TableCell>Tick</TableCell>
-              <TableCell align="right">Balance</TableCell>
-              <TableCell align="right">Transactions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-        {Object.entries(balances.balances.balances).map(([token, accounts]) => (
-          <Fragment key={token}>
-            {Object.entries(accounts).map(([accountId, balance]) => (
-              <TableRow key={accountId}>
-                <TableCell>{accountId}</TableCell>
-                <TableCell>{token}</TableCell>
-                <TableCell align="right">{balance}</TableCell>
-                <TableCell align="right">
-                <Accordion>
-                    <AccordionSummary>
-                      <Typography>View Transactions</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails style={{ backgroundColor: "#010101" }}>
-                      <TableContainer>
-                        <Table size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Operation</TableCell>
-                              <TableCell>Amount</TableCell>
-                              <TableCell>From</TableCell>
-                              <TableCell>To</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {balances.balances.transactionsByAccount[token][accountId].map((tx, index) => (
-                              <TableRow key={index}>
-                                <TableCell>{tx.op}</TableCell>
-                                <TableCell>{tx.amt}</TableCell>
-                                <TableCell>{tx.from}</TableCell>
-                                <TableCell>{tx.to}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    </AccordionDetails>
-                  </Accordion>
-                </TableCell>
-              </TableRow>
-            ))}
-          </Fragment>
-        ))}
-      </TableBody>
-        </Table>
-      </TableContainer>
-      )}{balances && balances.balances.failedTransactions && balances.balances.failedTransactions.length > 0 && (
+          {balances && (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Account ID</TableCell>
+                    <TableCell>Tick</TableCell>
+                    <TableCell align="right">Balance</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {balances.balances && Object.entries(balances.balances.balances).map(([token, accounts]) => (
+                    <Fragment key={token}>
+                      {Object.entries(accounts)
+                        .filter(([accountId]) => !filter || accountId.includes(filter)) // Apply filter here
+                        .map(([accountId, balance]) => (
+                          <TableRow key={accountId}>
+                            <TableCell>{accountId}</TableCell>
+                            <TableCell>{token}</TableCell>
+                            <TableCell align="right">{balance}</TableCell>
+                            
+                          </TableRow>
+                        ))}
+                    </Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+
+      {balances && balances.balances && balances.balances.failedTransactions && balances.balances.failedTransactions.length > 0 && (
         <Fragment>
         <br />
         <br />
@@ -344,6 +424,9 @@ export default function Ledger() {
           </TableContainer>
         </Fragment>
       )}
+      <br/>
+      <br/>
+      <br/>
       
         {/* {balances && (
           <Typography variant="body1" gutterBottom>
@@ -354,3 +437,4 @@ export default function Ledger() {
     </React.Fragment>
   );
 }
+
