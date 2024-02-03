@@ -4,6 +4,7 @@ import {
   BrowserWindowConstructorOptions,
   Rectangle,
 } from 'electron'
+import path from 'path'
 import Store from 'electron-store'
 
 export const createWindow = (
@@ -69,12 +70,12 @@ export const createWindow = (
   }
 
   state = ensureVisibleOnSomeDisplay(restore())
-
   const win = new BrowserWindow({
     ...state,
     ...options,
     webPreferences: {
       nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       ...options.webPreferences,
     },

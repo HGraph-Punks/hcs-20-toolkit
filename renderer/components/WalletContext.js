@@ -8,6 +8,7 @@ export const WalletProvider = ({ children }) => {
     accountId: '',
     network: 'mainnet',
     topicId: '0.0.4350190',
+    registry: '0.0.4362300',
     submitKey:''
   });
   return (
