@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Button, Container, Typography, CircularProgress, Checkbox, FormControlLabel, TextField, Snackbar } from '@mui/material';
+import { Button, Container, Typography, CircularProgress, Checkbox, FormControlLabel, TextField, Snackbar, Link } from '@mui/material';
 import { WalletContext } from '../components/WalletContext';
 import { Client, TopicCreateTransaction, PrivateKey, TopicMessageSubmitTransaction } from '@hashgraph/sdk';
 import { z } from 'zod';
@@ -126,6 +126,12 @@ const validateData = (data, schema) => {
   return (
     <Container>
       <br />
+      <Link href="/home">
+        <Button variant="text">Home</Button>
+      </Link>
+      <br />
+      <br />
+
       <Typography variant="h4" gutterBottom>Create new HCS Topic</Typography>
       <FormControlLabel
         control={<Checkbox checked={createSubmitKey} onChange={(e) => setCreateSubmitKey(e.target.checked)} />}
