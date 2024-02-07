@@ -21,9 +21,10 @@ const Header: FC = () => {
       role="presentation"
       onClick={toggleDrawer(false)}
       onKeyDown={toggleDrawer(false)}
+      style={{position: 'relative',top:'60px'}}
     >
       <List>
-        {['Home', 'Create Topic', 'Ledger', 'Registry'].map((text, index) => (
+        {['Home','HCS-20 Creator', 'HCS-20 Ledger', 'HCS-20 Registry','Create Topic'].map((text, index) => (
           <Link href={`/${text.replace(/\s+/g, '').toLowerCase()}`} key={text}>
             <ListItem button>
               <ListItemText primary={text} />
@@ -35,6 +36,9 @@ const Header: FC = () => {
               <ListItemText primary={"Docs"} />
             </ListItem>
           </a>
+          <ListItem>
+            <ListItemText primary={"Hashinals: Coming Soon"} />
+          </ListItem>
       </List>
 
     </div>
@@ -46,16 +50,16 @@ const Header: FC = () => {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
+      <AppBar  position="static" >
+        <Toolbar >
           <Button style={{color:"black", fontSize:30, padding:0, margin:0}} onClick={toggleDrawer(true)}>
           ☰
           </Button>
-          <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+          <Drawer  anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
             {list()}
           </Drawer>
           <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Turtle Moon HCS Toolkit (0.0.5)
+            Turtle Moon HCS Toolkit (0.0.6)
           </Typography>
           {walletContext && walletContext.walletInfo.accountId ? (
             <>

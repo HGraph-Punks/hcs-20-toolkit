@@ -298,7 +298,7 @@ export default function Ledger() {
       <Container>
         <br /> 
         <Link href="/home">
-          <Button variant="text">Go to Creator</Button>
+          <Button variant="text">Home</Button>
         </Link>
         <br />
         <br />

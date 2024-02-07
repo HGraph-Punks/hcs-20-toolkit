@@ -14,6 +14,13 @@ export default function WalletDialog({ open, onClose }) {
   
     const handleNetworkChange = (event) => {
       setIsMainnet(event.target.checked);
+      setWalletInfo({
+        ...walletInfo, 
+        topicId: event.target.checked ? '0.0.4350190' : '0.0.2673661',
+        registry: event.target.checked ? '0.0.4362300' : '0.0.2673665'
+      })
+      setLocalTopicId(event.target.checked ? '0.0.4350190' : '0.0.2673661')
+      setLocalRegistryTopicId( event.target.checked ? '0.0.4362300' : '0.0.2673665')
     };
   
     const handleSubmit = () => {

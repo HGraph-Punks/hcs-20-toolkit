@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material/styles';
 import { red } from '@mui/material/colors';
 
 // Define a dark dusty blue color
-const main = '#00a67d';
+const main = '#1FA551';
 
 // Create a theme instance with a dark color scheme
 const theme = createTheme({

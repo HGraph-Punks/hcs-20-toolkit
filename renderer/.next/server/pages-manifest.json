@@ -1,0 +1,12 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/createtopic": "pages/createtopic.html",
+  "/hashinal": "pages/hashinal.html",
+  "/hcs-20creator": "pages/hcs-20creator.html",
+  "/hcs-20ledger": "pages/hcs-20ledger.html",
+  "/hcs-20registry": "pages/hcs-20registry.html",
+  "/home": "pages/home.html",
+  "/404": "pages/404.html"
+}
