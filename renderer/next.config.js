@@ -1,22 +1,30 @@
 /** @type {import('next').NextConfig} */
-module.exports = {
+const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  future: {
-
-    // by default, if you customize webpack config, they switch back to version 4.
-    // Looks like backward compatibility approach.
-    webpack5: true,   
-  },
-  webpack: (config) => {
-    config.resolve = {
-      ...config.resolve,
-      fallback: {
+  webpack: (config, { isServer }) => {
+    // Assuming Webpack 5 is used by default in newer Next.js versions
+    if (!isServer) {
+      // Provide fallbacks for node modules used by MongoDB or other packages
+      config.resolve.fallback = {
         fs: false,
-      },
-    };
-    return config
+        path: false,
+        // Add other modules that may cause issues in client-side code
+        ...config.resolve.fallback,
+      };
+    }
+
+    // Add node-loader for handling .node files
+    config.module.rules.push({
+      test: /\.node$/,
+      loader: 'node-loader',
+      // Optional: Specify include path if you want to limit this rule to specific directories
+    });
+
+    return config;
   },
-}
+};
+
+module.exports = nextConfig;

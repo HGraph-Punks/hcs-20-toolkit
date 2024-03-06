@@ -1,5 +1,5 @@
 import path from 'path'
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, protocol } from 'electron'
 import serve from 'electron-serve'
 import { createWindow } from './helpers'
 const axios = require('axios');
@@ -12,8 +12,10 @@ if (isProd) {
   app.setPath('userData', `${app.getPath('userData')} (development)`)
 }
 
+
 ;(async () => {
   await app.whenReady()
+  // setupLocalFilesNormalizerProxy()
 
   const mainWindow = createWindow('main', {
     width: 1000,
@@ -128,6 +130,20 @@ ipcMain.handle('perform-request', async (event, url) => {
     throw error;
   }
 });
+const fs = require('fs');
+const mime = require('mime-types');
+
+ipcMain.handle('read-file', async (event, filePath) => {
+  try {
+    const data = fs.readFileSync(filePath);
+    const mimeType = mime.lookup(filePath) || 'application/octet-stream'; // Fallback to binary stream if MIME type is not found
+    return `data:${mimeType};base64,${data.toString('base64')}`;
+  } catch (error) {
+    console.error('Failed to read file:', error);
+    return null; // Return null or appropriate error response
+  }
+});
+
 
 ipcMain.on('message', async (event, arg) => {
   event.reply('message', `${arg} World!`)

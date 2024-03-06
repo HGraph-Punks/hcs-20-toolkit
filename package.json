@@ -17,13 +17,19 @@
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.39.0",
+    "@mongodb-js/zstd": "^1.2.0",
+    "@mui/icons-material": "^5.15.11",
+    "@mui/lab": "^5.0.0-alpha.165",
     "axios": "^1.6.3",
     "dexie": "^3.2.4",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
+    "formidable": "^3.5.1",
     "fs": "^0.0.1-security",
+    "lodash.chunk": "^4.2.0",
     "marked": "^11.1.1",
     "nedb": "^1.8.0",
+    "nft.storage": "^7.1.1",
     "pouchdb": "^8.0.1",
     "zod": "^3.22.4"
   },
@@ -39,6 +45,7 @@
     "electron-builder": "^24.6.4",
     "next": "^12.3.4",
     "nextron": "^8.12.0",
+    "node-loader": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.2.2"

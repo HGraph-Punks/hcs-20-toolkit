@@ -59,7 +59,7 @@ const Header: FC = () => {
             {list()}
           </Drawer>
           <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Turtle Moon HCS Toolkit (0.0.6)
+            Turtle Moon HCS Toolkit (0.0.7)
           </Typography>
           {walletContext && walletContext.walletInfo.accountId ? (
             <>

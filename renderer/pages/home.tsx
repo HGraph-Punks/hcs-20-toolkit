@@ -5,6 +5,8 @@ import Link from 'next/link';
 export default function Home() {
   // List of pages and their descriptions
   const pages = [
+    { name: 'Hashinals Minting', description: 'Mint Hashinals', link: '/hashinals' },
+    { name: 'Hashinals Mass Minting', description: 'Mint Hashinals', link: '/dashboard' },
     { name: 'HCS-20 Creator', description: 'Deploy, Mint, Transfer, or Burn HCS-20 points', link: '/hcs-20creator' },
     { name: 'HCS-20 Ledger', description: 'Read HCS-20 data from topic ids (will not show main public id ledger)', link: '/hcs-20ledger' },
     { name: 'HCS-20 Registry', description: 'View all HCS-20 topic ids that have been registered', link: '/hcs-20registry' },

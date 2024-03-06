@@ -14,6 +14,9 @@ const handler = {
     }
   },
 }
+contextBridge.exposeInMainWorld('electronAPI', {
+  readFile: (filePath) => ipcRenderer.invoke('read-file', filePath),
+});
 
 contextBridge.exposeInMainWorld('ipc', handler)
 
