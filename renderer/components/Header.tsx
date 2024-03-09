@@ -24,7 +24,7 @@ const Header: FC = () => {
       style={{position: 'relative',top:'60px'}}
     >
       <List>
-        {['Home','HCS-20 Creator', 'HCS-20 Ledger', 'HCS-20 Registry','Create Topic'].map((text, index) => (
+        {['Home','Hashinals','HCS-20 Creator', 'HCS-20 Ledger', 'HCS-20 Registry','Create Topic'].map((text, index) => (
           <Link href={`/${text.replace(/\s+/g, '').toLowerCase()}`} key={text}>
             <ListItem button>
               <ListItemText primary={text} />
@@ -36,9 +36,7 @@ const Header: FC = () => {
               <ListItemText primary={"Docs"} />
             </ListItem>
           </a>
-          <ListItem>
-            <ListItemText primary={"Hashinals: Coming Soon"} />
-          </ListItem>
+          
       </List>
 
     </div>

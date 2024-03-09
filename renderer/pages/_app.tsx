@@ -19,7 +19,7 @@ type MyAppProps = AppProps & {
 
 export default function MyApp(props: MyAppProps) {
   const { Component, pageProps, emotionCache = clientSideEmotionCache } = props
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(true);
 
   const walletContext = useContext(WalletContext);
 

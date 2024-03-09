@@ -2,6 +2,8 @@
 import React, { useContext, useState } from 'react';
 import { WalletContext } from './WalletContext';
 import { Dialog, DialogContent, DialogActions, Button, TextField, Switch, FormControlLabel } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 
 export default function WalletDialog({ open, onClose }) {
     const { walletInfo, setWalletInfo } = useContext(WalletContext);
@@ -36,54 +38,59 @@ export default function WalletDialog({ open, onClose }) {
     };
   
 
-  return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogContent> 
-        <TextField
-          label="Account ID"
-          fullWidth
-          margin="normal"
-          value={localAccountId}
-          onChange={(e) => setLocalAccountId(e.target.value)}
+    return (
+      <Dialog open={open} onClose={onClose}>
+        <DialogContent> 
+          <Alert severity="error" sx={{ marginBottom: 2 }}>
+              <AlertTitle>Alpha Software Warning</AlertTitle>
+              Please note that this is alpha technology. Functionality may not work as expected, fees may vary or be miscalculated, and data could be lost. Use at your own risk.
+          </Alert>
+          <TextField
+            label="Account ID"
+            fullWidth
+            margin="normal"
+            value={localAccountId}
+            onChange={(e) => setLocalAccountId(e.target.value)}
+          />
+          <TextField
+            label="Private Key"
+            fullWidth
+            type="password"
+            margin="normal"
+            value={localPrivateKey}
+            onChange={(e) => setLocalPrivateKey(e.target.value)}
+          />
+          <TextField
+            label="Topic Id"
+            fullWidth
+            margin="normal"
+            value={localTopicId}
+            onChange={(e) => setLocalTopicId(e.target.value)}
+          />
+          <TextField
+            label="Registry Topic"
+            fullWidth
+            margin="normal"
+            value={localRegistryTopicId}
+            onChange={(e) => setLocalRegistryTopicId(e.target.value)}
+          />
+          <TextField
+            label="Submit Key (Optional)"
+            fullWidth
+            margin="normal"
+            value={localSubmitKey}
+            onChange={(e) => setLocalSubmitKey(e.target.value)}
+          />
+         
+        <FormControlLabel
+          control={<Switch checked={isMainnet} onChange={handleNetworkChange} />}
+          label={isMainnet ? 'Mainnet' : 'Testnet'}
         />
-        <TextField
-          label="Private Key"
-          fullWidth
-          type="password"
-          margin="normal"
-          value={localPrivateKey}
-          onChange={(e) => setLocalPrivateKey(e.target.value)}
-        />
-        <TextField
-          label="Topic Id"
-          fullWidth
-          margin="normal"
-          value={localTopicId}
-          onChange={(e) => setLocalTopicId(e.target.value)}
-        />
-        <TextField
-          label="Registry Topic"
-          fullWidth
-          margin="normal"
-          value={localRegistryTopicId}
-          onChange={(e) => setLocalRegistryTopicId(e.target.value)}
-        />
-        <TextField
-          label="Submit Key (Optional)"
-          fullWidth
-          margin="normal"
-          value={localSubmitKey}
-          onChange={(e) => setLocalSubmitKey(e.target.value)}
-        />
-       
-      <FormControlLabel
-        control={<Switch checked={isMainnet} onChange={handleNetworkChange} />}
-        label={isMainnet ? 'Mainnet' : 'Testnet'}
-      />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleSubmit}>Use Account</Button>
-      </DialogActions>
-    </Dialog>
-  );
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSubmit}>Use Account</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  
 }
